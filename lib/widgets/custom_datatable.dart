@@ -127,7 +127,10 @@ class CustomDataTable extends StatelessWidget {
               Navigator.of(context).pop();
               onConfirm();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Supprimer'),
           ),
         ],

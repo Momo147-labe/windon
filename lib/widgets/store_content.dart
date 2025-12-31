@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../models/store_info.dart';
 import '../core/database/database_helper.dart';
 import '../services/update_service.dart';
+import '../services/theme_service.dart';
+import '../screens/badges_screen.dart';
+import '../screens/user_guide_screen.dart';
+import '../models/user.dart';
 import 'dart:io';
 
 class StoreContent extends StatefulWidget {
-  const StoreContent({Key? key}) : super(key: key);
+  final User? currentUser;
+
+  const StoreContent({Key? key, this.currentUser}) : super(key: key);
 
   @override
   State<StoreContent> createState() => _StoreContentState();
@@ -19,6 +26,7 @@ class _StoreContentState extends State<StoreContent> {
   bool _isCheckingUpdate = false;
   String? _error;
   final UpdateService _updateService = UpdateService();
+  Color _currentPrimaryColor = Colors.blue;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -31,6 +39,112 @@ class _StoreContentState extends State<StoreContent> {
   void initState() {
     super.initState();
     _loadStoreInfo();
+    _loadCurrentColor();
+  }
+
+  Future<void> _loadCurrentColor() async {
+    final color = await ThemeService.getPrimaryColor();
+    setState(() => _currentPrimaryColor = color);
+  }
+
+  Future<void> _changeAppColor() async {
+    Color? selectedColor;
+    
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choisir la couleur principale'),
+        content: SizedBox(
+          width: 300,
+          height: 400,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const Text('Couleurs prédéfinies:'),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ThemeService.availableColors.map((color) {
+                    return GestureDetector(
+                      onTap: () {
+                        selectedColor = color;
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: _currentPrimaryColor == color ? Colors.black : Colors.grey,
+                            width: _currentPrimaryColor == color ? 3 : 1,
+                          ),
+                        ),
+                        child: _currentPrimaryColor == color
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                const Text('Couleur personnalisée:'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Sélecteur de couleur'),
+                        content: SingleChildScrollView(
+                          child: ColorPicker(
+                            pickerColor: _currentPrimaryColor,
+                            onColorChanged: (color) => selectedColor = color,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Annuler'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Valider'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text('Sélecteur avancé'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedColor != null) {
+      await ThemeService.savePrimaryColor(selectedColor!);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Couleur changée en ${ThemeService.getColorName(selectedColor!)}'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Redémarrer l'application pour appliquer la nouvelle couleur
+      Navigator.of(context).pushNamedAndRemoveUntil('/restart', (route) => false);
+    }
   }
 
   @override
@@ -361,7 +475,9 @@ class _StoreContentState extends State<StoreContent> {
                     Text(
                       'Gérez les informations de votre établissement',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? Colors.grey.shade300 
+                            : Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -378,6 +494,34 @@ class _StoreContentState extends State<StoreContent> {
                   ),
                 ),
                 const SizedBox(width: 12),
+                if (widget.currentUser != null)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BadgesScreen(currentUser: widget.currentUser!),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.badge),
+                    label: const Text('Badges'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple.shade600,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: _changeAppColor,
+                  icon: const Icon(Icons.palette),
+                  label: const Text('Couleur'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _currentPrimaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: _isCheckingUpdate ? null : _checkForUpdates,
                   icon: _isCheckingUpdate 
@@ -386,6 +530,23 @@ class _StoreContentState extends State<StoreContent> {
                   label: Text(_isCheckingUpdate ? 'Vérification...' : 'Mise à jour'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserGuideScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.help_outline),
+                  label: const Text('Guide d\'utilisation'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade600,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -625,9 +786,15 @@ class _StoreContentState extends State<StoreContent> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.purple.shade50,
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.purple.shade900.withValues(alpha: 0.3)
+                          : Colors.purple.shade50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.purple.shade200),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? Colors.purple.shade700
+                            : Colors.purple.shade200,
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -692,7 +859,9 @@ class _StoreContentState extends State<StoreContent> {
           borderRadius: BorderRadius.circular(12),
         ),
         filled: true,
-        fillColor: _isEditing ? Colors.white : Colors.grey.shade50,
+        fillColor: _isEditing 
+            ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.white)
+            : (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade900 : Colors.grey.shade50),
       ),
       enabled: _isEditing,
       validator: validator,
@@ -726,7 +895,9 @@ class _StoreContentState extends State<StoreContent> {
                   title,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? Colors.grey.shade400 
+                        : Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

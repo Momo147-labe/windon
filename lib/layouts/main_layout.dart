@@ -124,7 +124,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       case '/reports':
         return ReportsContent(currentUser: widget.currentUser);
       case '/store':
-        return const StoreContent();
+        return StoreContent(currentUser: widget.currentUser);
       case '/users':
         // Vérifier les permissions admin
         if (widget.currentUser.role?.toLowerCase() == 'admin') {

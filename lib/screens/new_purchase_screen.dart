@@ -207,8 +207,12 @@ class _NewPurchaseScreenState extends State<NewPurchaseScreen> {
         actions: [
           TextButton.icon(
             onPressed: _selectedProducts.isNotEmpty ? _savePurchase : null,
-            icon: const Icon(Icons.save),
-            label: const Text('Enregistrer'),
+            icon: const Icon(Icons.save, color: Colors.white),
+            label: const Text('Valider Achat', style: TextStyle(color: Colors.white)),
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
           ),
           const SizedBox(width: 16),
         ],

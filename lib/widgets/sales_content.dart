@@ -7,6 +7,7 @@ import '../models/sale_line.dart';
 import '../models/product.dart';
 import '../models/customer.dart';
 import '../screens/new_sale_screen.dart';
+import '../services/export_service.dart';
 
 /// Contenu de gestion des ventes avec bouton Nouvelle Vente
 class SalesContent extends StatefulWidget {
@@ -119,6 +120,32 @@ class _SalesContentState extends State<SalesContent> {
     }
   }
 
+  Future<void> _exportSales(String format) async {
+    try {
+      if (format == 'pdf') {
+        await ExportService.exportSalesPDF(_sales);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Export PDF généré avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (format == 'excel') {
+        await ExportService.exportSalesExcel(_sales);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Export Excel généré avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l\'export: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -142,6 +169,47 @@ class _SalesContentState extends State<SalesContent> {
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              PopupMenuButton<String>(
+                onSelected: (value) => _exportSales(value),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'pdf',
+                    child: Row(
+                      children: [
+                        Icon(Icons.picture_as_pdf, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Exporter PDF'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'excel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_chart, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Exporter Excel'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.download, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('Exporter', style: TextStyle(color: Colors.white)),
+                    ],
                   ),
                 ),
               ),

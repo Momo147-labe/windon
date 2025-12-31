@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'calculator_dialog.dart';
 
 /// Widget de l'en-tête de l'application
 class Header extends StatelessWidget {
@@ -61,6 +62,18 @@ class Header extends StatelessWidget {
                   isDarkMode ? Icons.light_mode : Icons.dark_mode,
                 ),
                 tooltip: isDarkMode ? 'Mode clair' : 'Mode sombre',
+              ),
+              
+              // Calculatrice
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const CalculatorDialog(),
+                  );
+                },
+                icon: const Icon(Icons.calculate),
+                tooltip: 'Calculatrice',
               ),
             ],
           ),

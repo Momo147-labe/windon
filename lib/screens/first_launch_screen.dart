@@ -35,6 +35,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
   final _adminUsernameController = TextEditingController();
   final _adminPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _secretCodeController = TextEditingController();
   
   bool _isCreatingStore = false;
   String? _storeError;
@@ -66,6 +67,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
     _adminUsernameController.dispose();
     _adminPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _secretCodeController.dispose();
     super.dispose();
   }
 
@@ -164,6 +166,10 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
       setState(() => _storeError = 'Les mots de passe ne correspondent pas');
       return;
     }
+    if (_secretCodeController.text.trim().isEmpty) {
+      setState(() => _storeError = 'Code secret obligatoire');
+      return;
+    }
 
     setState(() {
       _isCreatingStore = true;
@@ -195,11 +201,13 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
 
       // 3. Créer le compte administrateur
       final hashedPassword = sha256.convert(utf8.encode(_adminPasswordController.text)).toString();
+      final hashedSecretCode = sha256.convert(utf8.encode(_secretCodeController.text.trim())).toString();
       final adminUser = User(
         username: _adminUsernameController.text.trim(),
         password: hashedPassword,
         fullName: _adminFullNameController.text.trim(),
         role: 'admin',
+        secretCode: hashedSecretCode,
         createdAt: DateTime.now().toIso8601String(),
       );
       await DatabaseHelper.instance.insertUser(adminUser);
@@ -777,6 +785,8 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
                       _buildTextField(_adminPasswordController, 'Mot de passe', Icons.lock, isPassword: true),
                       const SizedBox(height: 16),
                       _buildTextField(_confirmPasswordController, 'Confirmer le mot de passe', Icons.lock_outline, isPassword: true),
+                      const SizedBox(height: 16),
+                      _buildTextField(_secretCodeController, 'Code secret (pour réinitialisation)', Icons.security, isPassword: true),
                     ],
                   ),
                 ),

@@ -86,39 +86,45 @@ class _ProductsContentState extends State<ProductsContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return AdvancedDataTable(
-      title: 'Gestion des Produits',
-      columns: const [
-        'ID',
-        'Nom',
-        'Code-barres',
-        'Catégorie',
-        'Prix d\'achat',
-        'Prix de vente',
-        'Stock',
-        'Seuil d\'alerte',
-        'Statut',
+    return Column(
+      children: [
+        Expanded(
+          child: AdvancedDataTable(
+            title: 'Gestion des Produits',
+            columns: const [
+              'ID',
+              'Nom',
+              'Code-barres',
+              'Catégorie',
+              'Prix d\'achat',
+              'Prix de vente',
+              'Stock',
+              'Seuil d\'alerte',
+              'Statut',
+            ],
+            rows: _products.map((product) => [
+              product.id.toString(),
+              product.name,
+              product.barcode ?? '',
+              product.category ?? '',
+              '${product.purchasePrice?.toStringAsFixed(2) ?? '0'} €',
+              '${product.salePrice?.toStringAsFixed(2) ?? '0'} €',
+              product.stockQuantity?.toString() ?? '0',
+              product.stockAlertThreshold?.toString() ?? '0',
+              product.isLowStock ? 'ALERTE' : 'OK',
+            ]).toList(),
+            onAdd: () => _showProductDialog(),
+            onEdit: List.generate(
+              _products.length,
+              (index) => () => _showProductDialog(_products[index]),
+            ),
+            onDelete: List.generate(
+              _products.length,
+              (index) => () => _deleteProduct(index),
+            ),
+          ),
+        ),
       ],
-      rows: _products.map((product) => [
-        product.id.toString(),
-        product.name,
-        product.barcode ?? '',
-        product.category ?? '',
-        '${product.purchasePrice?.toStringAsFixed(2) ?? '0'} €',
-        '${product.salePrice?.toStringAsFixed(2) ?? '0'} €',
-        product.stockQuantity?.toString() ?? '0',
-        product.stockAlertThreshold?.toString() ?? '0',
-        product.isLowStock ? 'ALERTE' : 'OK',
-      ]).toList(),
-      onAdd: () => _showProductDialog(),
-      onEdit: List.generate(
-        _products.length,
-        (index) => () => _showProductDialog(_products[index]),
-      ),
-      onDelete: List.generate(
-        _products.length,
-        (index) => () => _deleteProduct(index),
-      ),
     );
   }
 }

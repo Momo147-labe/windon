@@ -95,7 +95,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
       // Sauvegarder la licence validée
       final settings = AppSettings(
-        license: LicenseService.formatLicense(license),
+        license: license,
         firstLaunchDone: false,
       );
       await DatabaseHelper.instance.updateAppSettings(settings);

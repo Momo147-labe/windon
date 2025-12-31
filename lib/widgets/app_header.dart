@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'alerts_widget.dart';
+import 'calculator_dialog.dart';
 
 /// Header amélioré avec design professionnel
 class AppHeader extends StatelessWidget {
@@ -140,6 +141,29 @@ class AppHeader extends StatelessWidget {
                     ),
                   ),
                   tooltip: isDarkMode ? 'Mode clair' : 'Mode sombre',
+                ),
+              ),
+              
+              const SizedBox(width: 8),
+              
+              // Calculatrice
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const CalculatorDialog(),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.calculate,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  tooltip: 'Calculatrice',
                 ),
               ),
             ],

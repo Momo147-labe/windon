@@ -32,11 +32,6 @@ class _LicenseActivationPageState extends State<LicenseActivationPage> {
       return;
     }
 
-    if (!LicenseService.isValidFormat(license)) {
-      setState(() => _error = 'Format de licence invalide');
-      return;
-    }
-
     setState(() {
       _isValidating = true;
       _error = null;

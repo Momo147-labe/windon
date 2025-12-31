@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/database/database_helper.dart';
 import 'theme.dart';
+import 'services/theme_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/first_launch_screen.dart';
 import 'layouts/main_layout.dart';
@@ -27,6 +28,20 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = false;
+  Color _primaryColor = Colors.blue;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeSettings();
+  }
+
+  Future<void> _loadThemeSettings() async {
+    final color = await ThemeService.getPrimaryColor();
+    setState(() {
+      _primaryColor = color;
+    });
+  }
 
   void _toggleTheme() {
     setState(() {
@@ -51,8 +66,22 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Guinnermagasin - Gestion de Magasin',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme.copyWith(
+        colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
+          primary: _primaryColor,
+        ),
+        appBarTheme: AppTheme.lightTheme.appBarTheme.copyWith(
+          backgroundColor: _primaryColor,
+        ),
+      ),
+      darkTheme: AppTheme.darkTheme.copyWith(
+        colorScheme: AppTheme.darkTheme.colorScheme.copyWith(
+          primary: _primaryColor,
+        ),
+        appBarTheme: AppTheme.darkTheme.appBarTheme.copyWith(
+          backgroundColor: _primaryColor,
+        ),
+      ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
       /// ✅ LOGIQUE DÉFINITIVE ICI
@@ -102,6 +131,12 @@ class _MyAppState extends State<MyApp> {
       case '/store':
       case '/users':
         return _buildSecureRoute(settings, routeName!);
+
+      case '/restart':
+        // Route spéciale pour redémarrer l'app après changement de couleur
+        return MaterialPageRoute(
+          builder: (_) => const MyApp(),
+        );
 
       default:
         return MaterialPageRoute(

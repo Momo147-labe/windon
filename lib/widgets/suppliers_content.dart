@@ -3,6 +3,8 @@ import '../widgets/advanced_datatable.dart';
 import '../core/database/database_helper.dart';
 import '../models/user.dart';
 import '../models/supplier.dart';
+import '../screens/supplier_details_screen.dart';
+import '../services/export_service.dart';
 
 /// Page de gestion des fournisseurs avec interface professionnelle Desktop
 class SuppliersContent extends StatefulWidget {
@@ -42,21 +44,25 @@ class _SuppliersContentState extends State<SuppliersContent> {
   }
 
   Future<void> _loadSuppliers() async {
-    setState(() => _isLoading = true);
+    if (mounted) setState(() => _isLoading = true);
     try {
       final suppliers = await DatabaseHelper.instance.getSuppliers();
       final rows = await _buildSupplierRows(suppliers);
-      setState(() {
-        _suppliers = suppliers;
-        _filteredSuppliers = suppliers;
-        _tableRows = rows;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _suppliers = suppliers;
+          _filteredSuppliers = suppliers;
+          _tableRows = rows;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e')),
-      );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
     }
   }
 
@@ -97,10 +103,12 @@ class _SuppliersContentState extends State<SuppliersContent> {
   void _filterSuppliers() {
     final query = _searchController.text.toLowerCase();
     if (query.isEmpty) {
-      setState(() {
-        _filteredSuppliers = _suppliers;
-        _tableRows = _buildFilteredRows(_suppliers);
-      });
+      if (mounted) {
+        setState(() {
+          _filteredSuppliers = _suppliers;
+          _tableRows = _buildFilteredRows(_suppliers);
+        });
+      }
     } else {
       final filtered = _suppliers.where((supplier) =>
         supplier.name.toLowerCase().contains(query) ||
@@ -109,10 +117,12 @@ class _SuppliersContentState extends State<SuppliersContent> {
         (supplier.address?.toLowerCase().contains(query) ?? false)
       ).toList();
       
-      setState(() {
-        _filteredSuppliers = filtered;
-        _tableRows = _buildFilteredRows(filtered);
-      });
+      if (mounted) {
+        setState(() {
+          _filteredSuppliers = filtered;
+          _tableRows = _buildFilteredRows(filtered);
+        });
+      }
     }
   }
 
@@ -208,6 +218,8 @@ class _SuppliersContentState extends State<SuppliersContent> {
   }
 
   Future<void> _saveSupplier(Supplier? existingSupplier) async {
+    if (!mounted) return;
+    
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Le nom du fournisseur est obligatoire')),
@@ -227,29 +239,80 @@ class _SuppliersContentState extends State<SuppliersContent> {
 
       if (existingSupplier != null) {
         await DatabaseHelper.instance.updateSupplier(supplier);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fournisseur modifié avec succès'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fournisseur modifié avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } else {
         await DatabaseHelper.instance.insertSupplier(supplier);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fournisseur créé avec succès'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fournisseur créé avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
 
-      Navigator.pop(context);
-      _loadSuppliers();
+      if (mounted) {
+        Navigator.pop(context);
+        _loadSuppliers();
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
     }
+  }
+
+  Future<void> _exportSuppliers(String format) async {
+    if (!mounted) return;
+    try {
+      if (format == 'pdf') {
+        await ExportService.exportSuppliersPDF(_suppliers);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Export PDF généré avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else if (format == 'excel') {
+        await ExportService.exportSuppliersExcel(_suppliers);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Export Excel généré avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'export: $e')),
+        );
+      }
+    }
+  }
+
+  void _viewSupplierDetails(int index) {
+    final supplier = _filteredSuppliers[index];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SupplierDetailsScreen(supplier: supplier),
+      ),
+    );
   }
 
   void _editSupplier(int index) {
@@ -335,6 +398,47 @@ class _SuppliersContentState extends State<SuppliersContent> {
                   ),
                 ),
               ),
+              const SizedBox(width: 16),
+              PopupMenuButton<String>(
+                onSelected: (value) => _exportSuppliers(value),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'pdf',
+                    child: Row(
+                      children: [
+                        Icon(Icons.picture_as_pdf, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Exporter PDF'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'excel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_chart, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Exporter Excel'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.download, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('Exporter', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
               const Spacer(),
               SizedBox(
                 width: 300,
@@ -365,6 +469,10 @@ class _SuppliersContentState extends State<SuppliersContent> {
               'Date création'
             ],
             rows: _tableRows,
+            onDetails: List.generate(
+              _filteredSuppliers.length,
+              (index) => () => _viewSupplierDetails(index),
+            ),
             onEdit: List.generate(
               _filteredSuppliers.length,
               (index) => () => _editSupplier(index),

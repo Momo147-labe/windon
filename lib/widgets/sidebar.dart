@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'calculator_dialog.dart';
 
 /// Widget de la barre latérale de navigation avec design professionnel
 class Sidebar extends StatefulWidget {

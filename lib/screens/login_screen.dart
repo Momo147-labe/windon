@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import '../core/database/database_helper.dart';
+import '../models/store_info.dart';
+import 'password_reset_screen.dart';
 
 
 /// Écran de connexion moderne et professionnel
@@ -21,10 +23,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  StoreInfo? _storeInfo;
 
   @override
   void initState() {
     super.initState();
+    _loadStoreInfo();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -36,6 +40,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
     _animationController.forward();
+  }
+
+  Future<void> _loadStoreInfo() async {
+    try {
+      final store = await DatabaseHelper.instance.getStoreInfo();
+      setState(() => _storeInfo = store);
+    } catch (e) {
+      // Ignorer l'erreur si pas de magasin configuré
+    }
   }
 
   @override
@@ -186,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             
                             // Titre principal
                             Text(
-                              'Guinnermagasin',
+                              _storeInfo?.name ?? 'Guinnermagasin',
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
@@ -308,6 +321,25 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             ),
                             
                             const SizedBox(height: 24),
+                            
+                            // Lien mot de passe oublié
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const PasswordResetScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Mot de passe oublié ?',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             
                             // Informations de connexion
                             Container(

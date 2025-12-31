@@ -27,6 +27,7 @@ class _UsersContentState extends State<UsersContent> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _fullNameController = TextEditingController();
+  final _secretCodeController = TextEditingController();
   String _selectedRole = 'caissier';
 
   final List<String> _roles = ['admin', 'gestionnaire', 'caissier', 'vendeur'];
@@ -42,6 +43,7 @@ class _UsersContentState extends State<UsersContent> {
     _usernameController.dispose();
     _passwordController.dispose();
     _fullNameController.dispose();
+    _secretCodeController.dispose();
     super.dispose();
   }
 
@@ -86,11 +88,13 @@ class _UsersContentState extends State<UsersContent> {
 
       // Créer l'utilisateur
       final hashedPassword = sha256.convert(utf8.encode(_passwordController.text)).toString();
+      final hashedSecretCode = sha256.convert(utf8.encode(_secretCodeController.text.trim())).toString();
       final newUser = User(
         username: _usernameController.text.trim(),
         password: hashedPassword,
         fullName: _fullNameController.text.trim(),
         role: _selectedRole,
+        secretCode: hashedSecretCode,
         createdAt: DateTime.now().toIso8601String(),
       );
 
@@ -176,6 +180,7 @@ class _UsersContentState extends State<UsersContent> {
     _usernameController.clear();
     _passwordController.clear();
     _fullNameController.clear();
+    _secretCodeController.clear();
     _selectedRole = 'caissier';
     _error = null;
 
@@ -270,6 +275,22 @@ class _UsersContentState extends State<UsersContent> {
                     validator: (value) {
                       if (value == null || value.length < 6) {
                         return 'Mot de passe minimum 6 caractères';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextFormField(
+                    controller: _secretCodeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Code secret (réinitialisation)',
+                      prefixIcon: Icon(Icons.security),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value?.trim().isEmpty ?? true) {
+                        return 'Code secret obligatoire';
                       }
                       return null;
                     },

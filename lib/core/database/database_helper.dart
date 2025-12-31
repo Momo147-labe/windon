@@ -31,7 +31,7 @@ class DatabaseHelper {
     );
 
     _db = await databaseFactory.openDatabase(dbPath, options: OpenDatabaseOptions(
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         // Table users
         await db.execute('''
@@ -41,6 +41,7 @@ class DatabaseHelper {
             password TEXT NOT NULL,
             full_name TEXT,
             role TEXT,
+            secret_code TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
           )
         ''');
@@ -221,6 +222,14 @@ class DatabaseHelper {
             await db.insert('app_settings', {'first_launch_done': 0});
           }
         }
+        if (oldVersion < 5) {
+          // Ajouter le champ secret_code aux utilisateurs
+          try {
+            await db.execute('ALTER TABLE users ADD COLUMN secret_code TEXT');
+          } catch (e) {
+            // Ignorer si la colonne existe déjà
+          }
+        }
       },
     ));
 
@@ -248,6 +257,24 @@ class DatabaseHelper {
   Future<User?> getUserByUsername(String username) async {
     final maps = await _db.query('users', where: 'username = ?', whereArgs: [username]);
     return maps.isNotEmpty ? User.fromMap(maps.first) : null;
+  }
+
+  Future<User?> getUserByUsernameOrEmail(String identifier) async {
+    final maps = await _db.query(
+      'users', 
+      where: 'username = ? OR full_name = ?', 
+      whereArgs: [identifier, identifier]
+    );
+    return maps.isNotEmpty ? User.fromMap(maps.first) : null;
+  }
+
+  Future<int> updateUserPassword(int userId, String newPassword) async {
+    return await _db.update(
+      'users', 
+      {'password': newPassword}, 
+      where: 'id = ?', 
+      whereArgs: [userId]
+    );
   }
 
   Future<int> updateUser(User user) async {

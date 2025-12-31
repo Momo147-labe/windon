@@ -6,6 +6,7 @@ class User {
   final String? fullName;
   final String? role;
   final String? createdAt;
+  final String? secretCode;
 
   User({
     this.id,
@@ -14,6 +15,7 @@ class User {
     this.fullName,
     this.role,
     this.createdAt,
+    this.secretCode,
   });
 
   /// Convertit l'objet User en Map pour la base de données
@@ -25,6 +27,7 @@ class User {
       'full_name': fullName,
       'role': role,
       'created_at': createdAt,
+      'secret_code': secretCode,
     };
   }
 
@@ -37,6 +40,7 @@ class User {
       fullName: map['full_name'],
       role: map['role'],
       createdAt: map['created_at'],
+      secretCode: map['secret_code'],
     );
   }
 
@@ -48,6 +52,7 @@ class User {
     String? fullName,
     String? role,
     String? createdAt,
+    String? secretCode,
   }) {
     return User(
       id: id ?? this.id,
@@ -56,6 +61,7 @@ class User {
       fullName: fullName ?? this.fullName,
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
+      secretCode: secretCode ?? this.secretCode,
     );
   }
 }

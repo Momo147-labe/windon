@@ -3,6 +3,8 @@ import '../widgets/advanced_datatable.dart';
 import '../core/database/database_helper.dart';
 import '../models/user.dart';
 import '../models/customer.dart';
+import '../screens/customer_details_screen.dart';
+import '../services/export_service.dart';
 
 /// Page de gestion des clients avec interface professionnelle Desktop
 class ClientsContent extends StatefulWidget {
@@ -252,6 +254,42 @@ class _ClientsContentState extends State<ClientsContent> {
     }
   }
 
+  Future<void> _exportCustomers(String format) async {
+    try {
+      if (format == 'pdf') {
+        await ExportService.exportCustomersPDF(_customers);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Export PDF généré avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (format == 'excel') {
+        await ExportService.exportCustomersExcel(_customers);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Export Excel généré avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l\'export: $e')),
+      );
+    }
+  }
+
+  void _viewCustomerDetails(int index) {
+    final customer = _filteredCustomers[index];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CustomerDetailsScreen(customer: customer),
+      ),
+    );
+  }
+
   void _editCustomer(int index) {
     _showCustomerDialog(customer: _filteredCustomers[index]);
   }
@@ -335,6 +373,47 @@ class _ClientsContentState extends State<ClientsContent> {
                   ),
                 ),
               ),
+              const SizedBox(width: 16),
+              PopupMenuButton<String>(
+                onSelected: (value) => _exportCustomers(value),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'pdf',
+                    child: Row(
+                      children: [
+                        Icon(Icons.picture_as_pdf, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Exporter PDF'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'excel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_chart, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Exporter Excel'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.download, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('Exporter', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
               const Spacer(),
               SizedBox(
                 width: 300,
@@ -365,6 +444,10 @@ class _ClientsContentState extends State<ClientsContent> {
               'Date création'
             ],
             rows: _tableRows,
+            onDetails: List.generate(
+              _filteredCustomers.length,
+              (index) => () => _viewCustomerDetails(index),
+            ),
             onEdit: List.generate(
               _filteredCustomers.length,
               (index) => () => _editCustomer(index),
