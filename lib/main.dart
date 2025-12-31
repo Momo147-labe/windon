@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gestion moderne de magasin',
+      title: 'Gestion moderne de magasins',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme.copyWith(
         colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
