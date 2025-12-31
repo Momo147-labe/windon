@@ -35,15 +35,6 @@ Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 
 [Run]
-; 🔐 Autoriser l'application dans le pare-feu Windows (IN + OUT)
-Filename: "netsh"; \
-Parameters: "advfirewall firewall add rule name=""{#AppName} IN"" dir=in action=allow program=""{app}\{#AppExeName}"" enable=yes"; \
-Flags: runhidden waituntilterminated
-
-Filename: "netsh"; \
-Parameters: "advfirewall firewall add rule name=""{#AppName} OUT"" dir=out action=allow program=""{app}\{#AppExeName}"" enable=yes"; \
-Flags: runhidden waituntilterminated
-
 ; 🚀 Lancer l'application après installation
 Filename: "{app}\{#AppExeName}"; \
 Description: "Lancer {#AppName}"; \

@@ -4,7 +4,6 @@ import 'dart:convert';
 import '../models/app_settings.dart';
 import '../models/store_info.dart';
 import '../models/user.dart';
-import '../services/license_service.dart';
 import '../core/database/database_helper.dart';
 
 class FirstLaunchScreen extends StatefulWidget {
@@ -19,11 +18,6 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
   int _currentPage = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
-  // License form
-  final _licenseController = TextEditingController();
-  bool _isActivatingLicense = false;
-  String? _licenseError;
   
   // Store form
   final _storeNameController = TextEditingController();
@@ -57,7 +51,6 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
   void dispose() {
     _animationController.dispose();
     _pageController.dispose();
-    _licenseController.dispose();
     _storeNameController.dispose();
     _ownerNameController.dispose();
     _phoneController.dispose();
@@ -72,7 +65,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
   }
 
   void _nextPage() {
-    if (_currentPage < 5) {
+    if (_currentPage < 5) { // 6 pages (0-5)
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -89,39 +82,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
     }
   }
 
-  Future<void> _activateLicense() async {
-    final license = _licenseController.text.trim();
-    
-    if (license.isEmpty) {
-      setState(() => _licenseError = 'Veuillez saisir une licence');
-      return;
-    }
 
-    setState(() {
-      _isActivatingLicense = true;
-      _licenseError = null;
-    });
-
-    try {
-      final result = await LicenseService.activateLicense(license);
-      
-      if (!result.canContinue) {
-        setState(() {
-          _licenseError = result.message;
-          _isActivatingLicense = false;
-        });
-        return;
-      }
-
-      setState(() => _isActivatingLicense = false);
-      _nextPage();
-    } catch (e) {
-      setState(() {
-        _licenseError = 'Erreur lors de l\'activation: $e';
-        _isActivatingLicense = false;
-      });
-    }
-  }
 
   Future<void> _createStoreAndAdmin() async {
     // Validation des champs
@@ -212,7 +173,10 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
       );
       await DatabaseHelper.instance.insertUser(adminUser);
 
-      // 4. Rediriger vers login
+      // 4. Marquer le premier lancement comme terminé
+      await DatabaseHelper.instance.markFirstLaunchDone();
+
+      // 5. Rediriger vers login
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
       }
@@ -345,7 +309,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
                     _buildFeaturesPage(),
                     _buildBenefitsPage(),
                     _buildTutorialPage(),
-                    _buildLicenseActivationPage(),
+                    _buildSecurityPage(),
                     _buildStoreCreationPage(),
                   ],
                 ),
@@ -370,26 +334,13 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
                   else
                     const SizedBox(),
                   
-                  if (_currentPage < 4)
+                  if (_currentPage < 5)
                     ElevatedButton.icon(
                       onPressed: _nextPage,
                       icon: const Icon(Icons.arrow_forward),
                       label: const Text('Suivant'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                    )
-                  else if (_currentPage == 4)
-                    ElevatedButton.icon(
-                      onPressed: _isActivatingLicense ? null : _activateLicense,
-                      icon: _isActivatingLicense 
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.security),
-                      label: Text(_isActivatingLicense ? 'Activation...' : 'Activer'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade600,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
@@ -562,106 +513,15 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 40),
-          _buildStepCard('1', 'Activez votre licence', 'Saisissez votre clé de licence pour débloquer toutes les fonctionnalités', Colors.orange),
-          _buildStepCard('2', 'Configurez votre magasin', 'Entrez les informations de base de votre établissement', Colors.blue),
-          _buildStepCard('3', 'Créez votre compte admin', 'Définissez vos identifiants de connexion sécurisés', Colors.green),
-          _buildStepCard('4', 'Commencez à utiliser', 'Ajoutez vos premiers produits et commencez à vendre', Colors.purple),
+          _buildStepCard('1', 'Configurez votre magasin', 'Entrez les informations de base de votre établissement', Colors.blue),
+          _buildStepCard('2', 'Créez votre compte admin', 'Définissez vos identifiants de connexion sécurisés', Colors.green),
+          _buildStepCard('3', 'Commencez à utiliser', 'Ajoutez vos premiers produits et commencez à vendre', Colors.purple),
         ],
       ),
     );
   }
 
-  Widget _buildLicenseActivationPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade100,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(Icons.security, size: 80, color: Colors.orange.shade700),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            'Activation de Licence',
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.orange.shade700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Saisissez votre clé de licence pour activer l\'application',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.grey.shade600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-          
-          if (_licenseError != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _licenseError!,
-                      style: TextStyle(color: Colors.red.shade700),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          
-          Container(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: TextField(
-              controller: _licenseController,
-              decoration: InputDecoration(
-                labelText: 'Clé de licence',
-                hintText: 'LIC-XXXXXXXXXXXXXXXX-XXXXXXXXXXXXXXXX',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.vpn_key),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 16),
-              enabled: !_isActivatingLicense,
-            ),
-          ),
-          const SizedBox(height: 20),
-          
-          TextButton.icon(
-            onPressed: _isActivatingLicense ? null : () {
-              _licenseController.text = LicenseService.generateTestLicense();
-            },
-            icon: const Icon(Icons.science),
-            label: const Text('Utiliser une licence de test'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.orange.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildStoreCreationPage() {
     return SingleChildScrollView(
@@ -789,6 +649,88 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
                       _buildTextField(_secretCodeController, 'Code secret (pour réinitialisation)', Icons.security, isPassword: true),
                     ],
                   ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(Icons.security, size: 80, color: Colors.orange.shade700),
+          ),
+          const SizedBox(height: 30),
+          Text(
+            'Sécurité et Confidentialité',
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.orange.shade700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 40),
+          _buildSecurityCard('🔒', 'Données 100% locales', 'Toutes vos données sont stockées localement sur votre appareil'),
+          _buildSecurityCard('🚫', 'Aucune connexion Internet requise', 'L\'application fonctionne complètement hors ligne'),
+          _buildSecurityCard('🔐', 'Chiffrement des mots de passe', 'Vos mots de passe sont sécurisés avec un chiffrement avancé'),
+          _buildSecurityCard('📊', 'Sauvegarde locale', 'Vos données sont automatiquement sauvegardées dans la base SQLite'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityCard(String emoji, String title, String description) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Center(
+              child: Text(emoji, style: const TextStyle(fontSize: 28)),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
                 ),
               ],
             ),

@@ -49,13 +49,21 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Vérifie simplement si une licence existe en SQLite
-  Future<bool> _hasLicense() async {
+  /// Vérifie si le premier lancement a été fait
+  Future<bool> _isFirstLaunch() async {
     try {
       final settings = await DatabaseHelper.instance.getAppSettings();
-      return settings != null &&
-          settings.license != null &&
-          settings.license!.isNotEmpty;
+      return settings == null || !settings.firstLaunchDone;
+    } catch (_) {
+      return true; // Premier lancement par défaut
+    }
+  }
+
+  /// Vérifie si un utilisateur existe
+  Future<bool> _hasUsers() async {
+    try {
+      final users = await DatabaseHelper.instance.getUsers();
+      return users.isNotEmpty;
     } catch (_) {
       return false;
     }
@@ -84,9 +92,9 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
-      /// ✅ LOGIQUE DÉFINITIVE ICI
-      home: FutureBuilder<bool>(
-        future: _hasLicense(),
+      /// ✅ NOUVELLE LOGIQUE 100% OFFLINE
+      home: FutureBuilder<List<bool>>(
+        future: Future.wait([_isFirstLaunch(), _hasUsers()]),
         builder: (context, snapshot) {
           // Loader simple pendant la vérification SQLite
           if (snapshot.connectionState != ConnectionState.done) {
@@ -97,12 +105,20 @@ class _MyAppState extends State<MyApp> {
             );
           }
 
-          // Licence présente → Login
-          if (snapshot.data == true) {
+          final isFirstLaunch = snapshot.data?[0] ?? true;
+          final hasUsers = snapshot.data?[1] ?? false;
+
+          // Premier lancement → Onboarding
+          if (isFirstLaunch) {
+            return const FirstLaunchScreen();
+          }
+
+          // Utilisateur existe → Login
+          if (hasUsers) {
             return const LoginScreen();
           }
 
-          // Sinon → 6 pages de lancement
+          // Sinon → Onboarding (sécurité)
           return const FirstLaunchScreen();
         },
       ),

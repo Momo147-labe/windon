@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../models/store_info.dart';
 import '../core/database/database_helper.dart';
-import '../services/update_service.dart';
 import '../services/theme_service.dart';
 import '../screens/badges_screen.dart';
 import '../screens/user_guide_screen.dart';
@@ -23,9 +22,7 @@ class _StoreContentState extends State<StoreContent> {
   bool _isLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
-  bool _isCheckingUpdate = false;
   String? _error;
-  final UpdateService _updateService = UpdateService();
   Color _currentPrimaryColor = Colors.blue;
 
   final _formKey = GlobalKey<FormState>();
@@ -244,165 +241,7 @@ class _StoreContentState extends State<StoreContent> {
     });
   }
 
-  Future<void> _checkForUpdates() async {
-    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
-      _showMessage('Mise à jour disponible uniquement sur Desktop', isError: true);
-      return;
-    }
 
-    setState(() => _isCheckingUpdate = true);
-
-    try {
-      final updateInfo = await _updateService.checkForUpdates();
-      
-      if (updateInfo == null) {
-        _showMessage('Impossible de vérifier les mises à jour', isError: true);
-        return;
-      }
-
-      if (!updateInfo.hasUpdate) {
-        _showMessage('Votre application est à jour (v${updateInfo.latestVersion})');
-        return;
-      }
-
-      _showUpdateDialog(updateInfo);
-    } catch (e) {
-      _showMessage(e.toString(), isError: true);
-    } finally {
-      setState(() => _isCheckingUpdate = false);
-    }
-  }
-
-  void _showUpdateDialog(UpdateInfo updateInfo) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.system_update, color: Colors.blue.shade600),
-            const SizedBox(width: 12),
-            const Text('Mise à jour disponible'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Une nouvelle version est disponible:', style: Theme.of(context).textTheme.bodyLarge),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.new_releases, color: Colors.blue.shade600),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Version ${updateInfo.latestVersion}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Voulez-vous télécharger et installer cette mise à jour maintenant ?'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Plus tard'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              _downloadAndInstallUpdate(updateInfo);
-            },
-            icon: const Icon(Icons.download),
-            label: const Text('Télécharger'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _downloadAndInstallUpdate(UpdateInfo updateInfo) async {
-    double progress = 0.0;
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Téléchargement en cours...'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              LinearProgressIndicator(value: progress),
-              const SizedBox(height: 16),
-              Text('${(progress * 100).toInt()}%'),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    try {
-      final filePath = await _updateService.downloadUpdate(
-        updateInfo.downloadUrl,
-        (downloadProgress) {
-          progress = downloadProgress;
-          if (mounted) setState(() {});
-        },
-      );
-
-      Navigator.pop(context); // Fermer dialog de téléchargement
-      
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green.shade600),
-              const SizedBox(width: 12),
-              const Text('Téléchargement terminé'),
-            ],
-          ),
-          content: const Text('La mise à jour va maintenant être installée. L\'application va se fermer.'),
-          actions: [
-            ElevatedButton.icon(
-              onPressed: () async {
-                Navigator.pop(context);
-                await _updateService.installUpdate(filePath);
-              },
-              icon: const Icon(Icons.install_desktop),
-              label: const Text('Installer maintenant'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      Navigator.pop(context); // Fermer dialog de téléchargement
-      _showMessage(e.toString(), isError: true);
-    }
-  }
 
   void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -518,18 +357,6 @@ class _StoreContentState extends State<StoreContent> {
                   label: const Text('Couleur'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _currentPrimaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: _isCheckingUpdate ? null : _checkForUpdates,
-                  icon: _isCheckingUpdate 
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.system_update),
-                  label: Text(_isCheckingUpdate ? 'Vérification...' : 'Mise à jour'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade600,
                     foregroundColor: Colors.white,
                   ),
                 ),

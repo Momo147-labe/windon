@@ -151,7 +151,6 @@ class DatabaseHelper {
         await db.execute('''
           CREATE TABLE app_settings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            license TEXT,
             first_launch_done INTEGER DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -196,7 +195,6 @@ class DatabaseHelper {
           await db.execute('''
             CREATE TABLE IF NOT EXISTS app_settings (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              license TEXT,
               first_launch_done INTEGER DEFAULT 0,
               created_at TEXT DEFAULT CURRENT_TIMESTAMP,
               updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -437,11 +435,10 @@ class DatabaseHelper {
   Future<int> updateAppSettings(AppSettings settings) async {
     final existing = await getAppSettings();
     if (existing != null) {
-      // Créer une map sans les valeurs null pour éviter les erreurs
-      final updateMap = <String, dynamic>{};
-      if (settings.license != null) updateMap['license'] = settings.license;
-      updateMap['first_launch_done'] = settings.firstLaunchDone ? 1 : 0;
-      if (settings.updatedAt != null) updateMap['updated_at'] = settings.updatedAt;
+      final updateMap = <String, dynamic>{
+        'first_launch_done': settings.firstLaunchDone ? 1 : 0,
+        'updated_at': settings.updatedAt ?? DateTime.now().toIso8601String(),
+      };
       
       return await _db.update('app_settings', updateMap, where: 'id = ?', whereArgs: [existing.id]);
     } else {
