@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:guinnermagasin/core/database/database_helper.dart';
-// import 'package:guinnermagasin/models/product_model.dart';
+// import 'package:gestion_moderne_magasin/core/database/database_helper.dart';
+// import 'package:gestion_moderne_magasin/models/product_model.dart';
 // import 'package:sqflite/sqflite.dart';
 
 // class ProductProvider extends ChangeNotifier {

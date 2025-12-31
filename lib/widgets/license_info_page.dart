@@ -31,7 +31,7 @@ class LicenseInfoPage extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Guinnermagasin nécessite une licence valide pour fonctionner.',
+                  'Gestion moderne de magasin nécessite une licence valide pour fonctionner.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Colors.green.shade800,

@@ -101,7 +101,7 @@ class _AnimatedSidebarState extends State<AnimatedSidebar> with TickerProviderSt
                 
                 // Nom du magasin
                 Text(
-                  widget.storeInfo?.name ?? 'Guinnermagasin',
+                  widget.storeInfo?.name ?? 'Gestion moderne de magasin',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,

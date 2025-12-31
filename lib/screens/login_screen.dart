@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             
                             // Titre principal
                             Text(
-                              _storeInfo?.name ?? 'Guinnermagasin',
+                              _storeInfo?.name ?? 'Gestion moderne de magasin',
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,

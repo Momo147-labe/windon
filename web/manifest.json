@@ -1,11 +1,11 @@
 {
-    "name": "guinnermagasin",
-    "short_name": "guinnermagasin",
+    "name": "Gestion moderne de magasin",
+    "short_name": "Gestion magasin",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Application moderne de gestion de magasin",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

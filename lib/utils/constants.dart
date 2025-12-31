@@ -1,8 +1,8 @@
-/// Constantes de l'application Guinnermagasin
+/// Constantes de l'application Gestion moderne de magasin
 class AppConstants {
   
   // Informations de l'application
-  static const String appName = 'Guinnermagasin';
+  static const String appName = 'Gestion moderne de magasin';
   static const String appVersion = '1.0.0';
   static const String appDescription = 'Application de gestion de magasin';
   

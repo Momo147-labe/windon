@@ -272,7 +272,7 @@ class _SetupScreenState extends State<SetupScreen> {
           Icon(Icons.store, size: 100, color: Colors.blue),
           const SizedBox(height: 30),
           Text(
-            'Bienvenue dans Guinnermagasin',
+            'Bienvenue dans Gestion moderne de magasin',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -346,7 +346,7 @@ class _SetupScreenState extends State<SetupScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Guinnermagasin nécessite une licence valide pour fonctionner. '
+            'Gestion moderne de magasin nécessite une licence valide pour fonctionner. '
             'Votre licence garantit l\'accès à toutes les fonctionnalités et au support technique.',
             style: Theme.of(context).textTheme.bodyLarge,
             textAlign: TextAlign.center,

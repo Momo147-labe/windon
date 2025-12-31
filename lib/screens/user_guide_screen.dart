@@ -20,7 +20,7 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
       title: 'Introduction',
       icon: Icons.home,
       content: '''
-Bienvenue dans Guinnermagasin, votre solution complète de gestion de magasin.
+Bienvenue dans Gestion moderne de magasin, votre solution complète de gestion de magasin.
 
 Cette application vous permet de :
 • Gérer votre inventaire en temps réel
@@ -233,7 +233,7 @@ Fonctionnalités :
           return [
             pw.Header(
               level: 0,
-              child: pw.Text('Guide d\'utilisation - Guinnermagasin', 
+              child: pw.Text('Guide d\'utilisation - Gestion moderne de magasin', 
                 style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
             ),
             pw.SizedBox(height: 20),

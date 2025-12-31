@@ -262,7 +262,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Guinnermagasin',
+                            'Gestion moderne de magasin',
                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.blue.shade700,
@@ -432,7 +432,7 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> with TickerProvid
           ),
           const SizedBox(height: 40),
           Text(
-            'Bienvenue dans Guinnermagasin',
+            'Bienvenue dans Gestion moderne de magasin',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.blue.shade700,

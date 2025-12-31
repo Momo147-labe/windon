@@ -1,6 +1,6 @@
-#define AppName "Guinner Magasin"
+#define AppName "Gestion moderne de magasin"
 #define AppVersion "1.0.0"
-#define AppExeName "guinnermagasin.exe"
+#define AppExeName "gestion_moderne_magasin.exe"
 
 [Setup]
 AppName={#AppName}
@@ -8,7 +8,7 @@ AppVersion={#AppVersion}
 DefaultDirName={pf}\{#AppName}
 DefaultGroupName={#AppName}
 OutputDir=Output
-OutputBaseFilename=Setup-Guinner-Magasin
+OutputBaseFilename=Setup-Gestion-Moderne-Magasin
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

@@ -118,7 +118,7 @@ class _SidebarState extends State<Sidebar> with TickerProviderStateMixin {
                 
                 // Nom du magasin
                 const Text(
-                  'Guinnermagasin',
+                  'Gestion moderne de magasin',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,

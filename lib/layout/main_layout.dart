@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:guinnermagasin/pages/products_page.dart';
+// import 'package:gestion_moderne_magasin/pages/products_page.dart';
 
 // import '../widgets/sidebar.dart';
 // import '../pages/dashboard_page.dart';

@@ -1,6 +1,6 @@
-# guinnermagasin
+# Gestion moderne de magasin
 
-A new Flutter project.
+Une application Flutter moderne pour la gestion de magasin.
 
 ## Getting Started
 

@@ -1,14 +1,14 @@
 
-import 'package:guinnermagasin/models/customer.dart';
-import 'package:guinnermagasin/models/product.dart';
-import 'package:guinnermagasin/models/purchase.dart';
-import 'package:guinnermagasin/models/purchase_line.dart';
-import 'package:guinnermagasin/models/sale.dart';
-import 'package:guinnermagasin/models/sale_line.dart';
-import 'package:guinnermagasin/models/supplier.dart';
-import 'package:guinnermagasin/models/user.dart';
-import 'package:guinnermagasin/models/app_settings.dart';
-import 'package:guinnermagasin/models/store_info.dart';
+import 'package:gestion_moderne_magasin/models/customer.dart';
+import 'package:gestion_moderne_magasin/models/product.dart';
+import 'package:gestion_moderne_magasin/models/purchase.dart';
+import 'package:gestion_moderne_magasin/models/purchase_line.dart';
+import 'package:gestion_moderne_magasin/models/sale.dart';
+import 'package:gestion_moderne_magasin/models/sale_line.dart';
+import 'package:gestion_moderne_magasin/models/supplier.dart';
+import 'package:gestion_moderne_magasin/models/user.dart';
+import 'package:gestion_moderne_magasin/models/app_settings.dart';
+import 'package:gestion_moderne_magasin/models/store_info.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart';
 

@@ -13,7 +13,7 @@ class WelcomePage extends StatelessWidget {
           Icon(Icons.store, size: 120, color: Colors.blue),
           const SizedBox(height: 40),
           Text(
-            'Bienvenue dans Guinnermagasin',
+            'Bienvenue dans Gestion moderne de magasin',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.blue.shade700,

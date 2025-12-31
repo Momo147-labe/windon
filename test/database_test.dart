@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:guinnermagasin/core/database/database_helper.dart';
-import 'package:guinnermagasin/models/product.dart';
-import 'package:guinnermagasin/models/user.dart';
-import 'package:guinnermagasin/models/customer.dart';
-import 'package:guinnermagasin/models/supplier.dart';
+import 'package:gestion_moderne_magasin/core/database/database_helper.dart';
+import 'package:gestion_moderne_magasin/models/product.dart';
+import 'package:gestion_moderne_magasin/models/user.dart';
+import 'package:gestion_moderne_magasin/models/customer.dart';
+import 'package:gestion_moderne_magasin/models/supplier.dart';
 
 void main() {
   group('Database Tests', () {
