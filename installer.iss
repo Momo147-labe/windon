@@ -3,8 +3,11 @@
 #define AppExeName "gestion_moderne_magasin.exe"
 
 [Setup]
+AppId={9F7A6C2E-8B5D-4C7F-A2E1-123456789ABC}
 AppName={#AppName}
 AppVersion={#AppVersion}
+AppPublisher=Fode Momo Soumah
+AppPublisherURL=https://github.com/Momo147-labe
 DefaultDirName={pf}\{#AppName}
 DefaultGroupName={#AppName}
 OutputDir=Output
@@ -14,12 +17,16 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+DisableProgramGroupPage=yes
+PrivilegesRequired=admin
+SetupIconFile=icon.ico
 
 [Files]
-; Copie de ton EXE et tous les fichiers du Release
-Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+; Fichiers Flutter Release
+Source: "build\windows\x64\runner\Release\*"; \
+DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
-; Copie manuelle des DLL nécessaires si elles ne sont pas dans Release
+; DLL Visual C++ (sécurité)
 Source: "C:\Windows\System32\vcruntime140.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Windows\System32\msvcp140.dll"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -28,4 +35,16 @@ Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "Lancer {#AppName}"; Flags: nowait postinstall skipifsilent
+; 🔐 Autoriser l'application dans le pare-feu Windows (IN + OUT)
+Filename: "netsh"; \
+Parameters: "advfirewall firewall add rule name=""{#AppName} IN"" dir=in action=allow program=""{app}\{#AppExeName}"" enable=yes"; \
+Flags: runhidden waituntilterminated
+
+Filename: "netsh"; \
+Parameters: "advfirewall firewall add rule name=""{#AppName} OUT"" dir=out action=allow program=""{app}\{#AppExeName}"" enable=yes"; \
+Flags: runhidden waituntilterminated
+
+; 🚀 Lancer l'application après installation
+Filename: "{app}\{#AppExeName}"; \
+Description: "Lancer {#AppName}"; \
+Flags: nowait postinstall skipifsilent
