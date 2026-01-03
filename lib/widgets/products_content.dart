@@ -3,6 +3,7 @@ import '../widgets/advanced_datatable.dart';
 import '../core/database/database_helper.dart';
 import '../models/user.dart';
 import '../models/product.dart';
+import '../utils/barcode_generator.dart';
 
 /// Contenu de gestion des produits avec DataTable avancée
 class ProductsContent extends StatefulWidget {
